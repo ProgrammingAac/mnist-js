@@ -1,42 +1,73 @@
-//Written by Aa C. (ProgrammingAac@gmail.com)
+/**
+ * @module ActivationUtil
+ */
+
+/**
+ * @author Aa C.
+ * @class Utility class that provides common neuron activation functions and their respective gradients
+ */
 class ActivationUtil{
-  //leaky ReLU
+  /**
+   * @param {number} x The number to be passed through the ReLU function (leaky)
+   * @returns {number} The result of ReLU(x)
+   */
   static relu(x) {
     return x < 0 ? 0.001*x : x;
   }
 
-  //gradient for leaky ReLU
+  /**
+   * @param {number} x The number to be passed through the ReLU (leaky) gradient function 
+   * @returns {number} The gradient of the ReLU function at x
+   */
   static reluGrad(x) {
     return x <= 0 ? 0.001 : 1;
   }
 
-  //sigmoid function
+  /**
+   * @param {number} x The number to be passed through the Sigmoid function 
+   * @returns {number} The result of Sigmoid(x)
+   */
   static sigmoid(x) {
     let ex = Math.exp(x);
     return ex / (ex + 1);
   }
 
-  //gradient for sigmoid function
+  /**
+   * @param {number} x The number to be passed through the Sigmoid gradient function 
+   * @returns {number} The gradient of the Sigmoid function at x
+   */
   static sigmoidGrad(x) {
     let ex = Math.exp(x);
     let y = ex / (ex + 1);
     return y * (1-y);
   }
 
-  //tanh function
+  /**
+   * @param {number} x The number to be passed through the tanh function
+   * @returns {number} The result of tanh(x)
+   */
   static tanh(x) {
     let ex = Math.exp(x);
     let eNegX = 1/ex;
     return (ex-eNegX) / (ex+eNegX);
   }
 
-  //gradient for tanh function
+  /**
+   * @param {number} x The number to be passed through the tanh gradient function 
+   * @returns {number} The gradient of the tanh function at x
+   */
   static tanhGrad(x) {
     let tanhX = ActivationUtil.tanh(x);
     return 1 - tanhX*tanhX;
   }
 
-  //return the gradient function accroding to the activation function
+  /**
+   * @example
+   * // return ActivationUtil.reluGrad
+   * ActivationUtil.getGradFunc(ActivationUtil.relu)
+   * @param {function} activation Activation function provided in ActivationUtil class
+   * @returns {function} The gradient of the activation function passed
+   */
   static getGradFunc(activation){
     switch (activation){
       case ActivationUtil.relu:
@@ -49,6 +80,4 @@ class ActivationUtil{
   }
 }
 
-if(typeof process === 'object'){
-  module.exports = ActivationUtil;
-}
+module.exports = ActivationUtil;

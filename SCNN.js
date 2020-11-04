@@ -1,5 +1,26 @@
-//Written by Aa C. (ProgrammingAac@gmail.com)
+/**
+ * @module Model
+ */
+
+const InLayer = require('./InLayer.js');
+const CLayer = require('./CLayer.js');
+const ALayer = require('./ALayer.js');
+const FLayer = require('./FLayer.js');
+const RLayer = require('./RLayer.js');
+const NLayer = require('./NLayer.js');
+
+/**
+ * @author Aa C.
+ * @class The representation of a neural network
+ */
 class Model {
+
+  /**
+   * @constructs
+   * @param {number} a Learning rate
+   * @param {array} layers Array containing the layers constituting the neural network
+   * @param {string} errFunc String that indicate the type of error function used. "MSE" means mean-squared-error. Default is "MSE".
+   */
   constructor(a, layers, errFunc){
     this.a = a;
 
@@ -32,6 +53,11 @@ class Model {
     }
   }
 
+  /**
+   * Store the neural network model's information in a formatted string, and return that string
+   * 
+   * @returns {string} String containing the neura network model's information
+   */
   serialize(){
     let ser = "";
     ser += this.a.toString();
@@ -44,6 +70,12 @@ class Model {
     return ser;
   }
 
+  /**
+   * Create an instance of Model using the information in a serialized string (returned by serialize() function)
+   * 
+   * @param {string} ser String returned by serialize() function
+   * @returns {object} an instance of Model
+   */
   static deserialize(ser){
     let sections = ser.split("|");
 
@@ -83,6 +115,10 @@ class Model {
     return model;
   }
 
+  /**
+   * Reset the memory of the R-Layers inside this neural network model.
+   * It is a RNN-exclusive function.
+   */
   resetMemory() {
     if (!this.isRNN) {
       throw new Error("Only RNNs have access to resetMemory()");
@@ -96,6 +132,12 @@ class Model {
     }
   }
 
+  /**
+   * Perform forward propagation,
+   * The output is saved in instance's field (this.output)
+   * 
+   * @param {array} input Array containing the input to be used for forward propagation
+   */
   forProp(input) {
     let layers = this.layers;
     layers[0].forProp(input);
@@ -106,7 +148,14 @@ class Model {
     return this.output;
   }
 
-  //for implicity, this is only the "many-to-one" case
+  /**
+   * Perform forawrd propagation with RNN. 
+   * For simplicity, this is only the "many-to-one" case. 
+   * It is a RNN-exclusive function.
+   * The output is saved in instance's field (this.output)
+   * 
+   * @param {array} inputs Array that contains sequence of arrays of network input data
+   */
   forPropSeries(inputs) {
     if (!this.isRNN) {
       throw new Error("Only RNNs have access to forPropSeries()");
@@ -119,6 +168,15 @@ class Model {
     return this.output;
   }
 
+  /**
+   * Perform backward propagation.
+   * Pass the gradient information from the last layer backwards each layer at a time,
+   * until reaching the first layer
+   * 
+   * @param {array} input Array of input data
+   * @param {array} target The target/desired network output for calculating the network error
+   * @returns {array} Array containing the parameter gradient for each layer
+   */
   backProp(input, target) {
     console.log("Target:", target);
     let output = this.forProp(input);
@@ -134,7 +192,15 @@ class Model {
     return dP;
   }
 
-  //for implicity, this is only the "many-to-one" case
+  /**
+   * Perform backward propagation through time with RNN. 
+   * For simplicity, this is only the "many-to-one" case. 
+   * It is a RNN-exclusive function.
+   * 
+   * @param {array} inputs Array that contains sequence of arrays of network input data
+   * @param {array} target The target/desired network output for calculating the network error
+   * @returns {array} Array containing the parameter gradient for each layer
+   */
   backPropSeries(inputs, target) {
     if (!this.isRNN) {
       throw new Error("Only RNNs have access to backPropSeries()");
@@ -158,6 +224,15 @@ class Model {
     return dP;
   }
 
+  /**
+   * Calcuate the error between the 
+   * network output and the target/desired output 
+   * using the mean-squared-error approach
+   * 
+   * @param {array} output Output from neural network
+   * @param {array} target The target/desired network output for calculating the network error
+   * @returns {array} Array of the calculated output error
+   */
   _mseGrad(output, target){
     if (output.length !== target.length) throw new Error("output length does not match target length");
     let err = new Array(output.length);
@@ -167,11 +242,18 @@ class Model {
     return err;
   }
 
+  /**
+   * Train the neural network model through a input/target-output pair dataset
+   * 
+   * @param {array} inputs Array of arrays containing the network input
+   * @param {array} targets Array of arrays containing the target/desired output.
+   * @param {number} batch The interval between updating the model's parameters
+   */
   train(inputs, targets, batch){
     for (let j = 0; j < inputs.length; j+=batch){
       for (let b = 0; b < batch; b++){
         if (j + b < inputs.length){
-          console.log((j+b+1) + " / " + inputs.length);
+          // console.log((j+b+1) + " / " + inputs.length);
 
           let dP;
           if (!this.isRNN) {
@@ -188,6 +270,13 @@ class Model {
     }
   }
 
+  /**
+   * Test the accuracy of the model with a input/target-output pair dataset
+   * 
+   * @param {array} inputs Array of arrays containing the network input
+   * @param {array} targets Array of arrays containing the target/desired output.
+   * @returns {object} Object literal containing testSamples (the number of test samples), and correctCount (the number of correct output count)
+   */
   test(inputs, targets){
     let correctCount = 0;
     for (let i = 0; i < inputs.length; i++) {
@@ -232,12 +321,18 @@ class Model {
     };
   }
 
+  /**
+   * Update the parameters for each layer in the neural network
+   */
   updateParameters(){
     for (let i = 1; i < this.layers.length; i++){
       this.layers[i].updateParameters(this.a);
     }
   }
 
+  /**
+   * @returns {string} a description string of the model's structure.
+   */
   get structureDescription() {
     let ser = this.serialize();
     let sections = ser.split("|");
@@ -279,7 +374,9 @@ class Model {
 
 }
 
-if (typeof(process) === "object"){    //Running in Node.js
+module.exports = Model;
+
+if (process.argv[1] === __dirname + "\\SCNN.js"){
 
   const genTrainingReport = function(hyperParamsDict, performanceDict) {
     let a = hyperParamsDict.a;
@@ -348,14 +445,7 @@ if (typeof(process) === "object"){    //Running in Node.js
     throw new Error("Invalid Input");
   }
 
-  Matrix = require('./Matrix.js');
-  ActivationUtil = require('./ActivationUtil.js');
-  InLayer = require('./InLayer.js');
-  CLayer = require('./CLayer.js');
-  ALayer = require('./ALayer.js');
-  FLayer = require('./FLayer.js');
-  RLayer = require('./RLayer.js');
-  NLayer = require('./NLayer.js');
+
   const fs = require('fs');
   const path = require('path');
 

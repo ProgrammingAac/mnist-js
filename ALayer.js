@@ -1,10 +1,28 @@
-//Written by Aa C. (ProgrammingAac@gmail.com)
+/**
+ * @module ALayer
+ */
+
+const Matrix = require('./Matrix.js');
+
+/**
+ * @author Aa C.
+ * @class The representation of an average pooling layer in a convolutional neural network (CNN)
+ */
 class ALayer{
+  
+  /**
+   * @constructs 
+   * @param {number} kernelSize The length(or width) of the kernel 
+   */
   constructor(kernelSize){
     this.kernelSize = kernelSize;
   }
 
-  //return 
+  /**
+   * Store the layer's information in a formatted string and returns that string
+   * 
+   * @returns {string} String containing the layer's information
+   */
   serialize(){
     let ser = "";
     ser += "<" + this.constructor.name + ">";
@@ -13,6 +31,13 @@ class ALayer{
     return ser;
   }
 
+  /**
+   * Extract information from the serialized string returned by serialize() function 
+   * and return those information as an object literal
+   * 
+   * @param {string} ser String returned by serialize() function
+   * @returns {object} object literal containing the layer's information
+   */
   static getLayerInfo(ser){
     let infoRegex = /^<([A-Za-z]+)><([0-9]+)>/;
     let info = infoRegex.exec(ser);
@@ -25,6 +50,12 @@ class ALayer{
     };
   }
 
+  /**
+   * Create an instance of ALayer using the information in a serialized string (returned by serialize() function)
+   * 
+   * @param {string} ser String returned by serialize() function
+   * @returns {object} an instance of ALayer
+   */
   static deserialize(ser){
     let layerInfo = ALayer.getLayerInfo(ser);
     let kernelSize = layerInfo.kernelSize;
@@ -33,6 +64,10 @@ class ALayer{
     return aLayer;
   }
 
+  /**
+   * @param {string} ser String returned by serialize() function
+   * @returns {string} a brief description of the layer
+   */
   static getLayerDescription(ser){
     let layerInfo = ALayer.getLayerInfo(ser);
     let layerType = layerInfo.layerType;
@@ -45,6 +80,12 @@ class ALayer{
     return description;
   }
 
+  /**
+   * Called when creating a neural network instance, in order to establish the sequence of different layers in a model.
+   * 
+   * @param {object} prevLayer The layer to be placed before this layer
+   * @param {object} nextLayer The layer to be placed after this layer
+   */
   link(prevLayer, nextLayer){
     this.prevLayer = prevLayer;
     this.nextLayer = nextLayer;
@@ -65,6 +106,11 @@ class ALayer{
     this.numMaps = prevLayer.numMaps;
   }
 
+  /**
+   * Performing the forward propagation.
+   * Using the previous layer's output as the input.
+   * The output is saved in instance's field (this.O)
+   */
   forProp(){
     let I = this.prevLayer.O;
     this.I = I;
@@ -77,6 +123,15 @@ class ALayer{
     this.O = O;
   }
 
+  /**
+   * Pad a matrix of values with zeros so as to output a Matrix with suitable dimensions to be used as input for this layer
+   * 
+   * @example
+   * // inputMap = 3x3 Matrix; Pooling kernel = 2x2 --> return a 4x4 Matrix with padded zeros
+   * 
+   * @param {Matrix} inputMap Input map
+   * @returns {Matrix} Input map matrix with padded zeros
+   */
   padMap(inputMap){
     let paddedHeight = inputMap.row + this.yPadding;
     let paddedWidth = inputMap.col + this.xPadding;
@@ -100,7 +155,13 @@ class ALayer{
 
     return paddedMap;
   }
-  
+
+  /**
+   * Perform average pooling on a value map. Pad the value map before the pooling if necessary
+   * 
+   * @param {Matrix} inputMap The value map to perform average pooling on
+   * @returns {Matrix} The result pooled map as an Matrix instance
+   */
   avgPool(inputMap){
     let paddedMap;
     let stride = this.kernelSize;
@@ -127,6 +188,13 @@ class ALayer{
     return result;
   }
   
+  /**
+   * Remove some side columns and rows to reduce the dimensions
+   * of a value map to be the same as previous layer's output's
+   * 
+   * @param {Matrix} outputMap The value map to be depadded
+   * @returns {Matrix} The depadded value map
+   */
   depadMap(outputMap){
     let depaddedWidth = outputMap.col - this.xPadding;
     let depaddedHeight = outputMap.row - this.yPadding;
@@ -141,6 +209,15 @@ class ALayer{
     return result;
   }
 
+  /**
+   * Averaging and spreading each gradient value 
+   * in the argument map to an area of (stride * stride).  
+   * Return the result of the above operation.
+   * 
+   * 
+   * @param {Matrix} gradMap Matrix containing gradent values
+   * @returns {Matrix} Matrix containing the spreaded and averaged gradient values
+   */
   avgPoolGrad(gradMap){
     let stride = this.kernelSize;
 
@@ -160,6 +237,10 @@ class ALayer{
     return this.depadMap(result);
   }
 
+  /**
+   * Backward propagation.  
+   * Pass the gradient information from next layer to the previous layer
+   */
   backProp(){
     let dEdO = this.nextLayer.dEdI;
 
@@ -172,16 +253,19 @@ class ALayer{
     return null;
   }
 
+  /**
+   * Place holder. ALayer does not have any trainable parameters
+   */
   addDP(){
     return;
   }
 
+  /**
+   * Place holder. ALayer does not have any trainable parameters
+   */
   updateParameters(){
     return;
   }
 }
 
-if(typeof process === 'object'){
-  ActivationUtil = require('./ActivationUtil.js');
-  module.exports = ALayer;
-}
+module.exports = ALayer;

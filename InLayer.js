@@ -1,5 +1,21 @@
-//Written by Aa C. (ProgrammingAac@gmail.com)
+/**
+ * @module InLayer
+ */
+
+const Matrix = require('./Matrix.js');
+
+/**
+ * @author Aa C.
+ * @class The representation of an Input layer in a neural network
+ */
 class InLayer{
+
+  /**
+   * @constructs
+   * @param {number} height The height dimension of the input
+   * @param {number} width The width dimension of the input. Default is 1.
+   * @param {number} numMaps The number of input maps.
+   */
   constructor(height, width, numMaps){
     this.height = height;
 
@@ -13,6 +29,11 @@ class InLayer{
     }
   }
 
+  /**
+   * Store the layer's information in a formatted string and returns that string
+   * 
+   * @returns {string} String containing the layer's information
+   */
   serialize(){
     let ser = "";
     ser += "<" + this.constructor.name + ">";
@@ -23,6 +44,14 @@ class InLayer{
     return ser;
   }
 
+
+  /**
+   * Extract information from the serialized string returned by serialize() function 
+   * and return those information as an object literal
+   * 
+   * @param {string} ser String returned by serialize() function
+   * @returns {object} object literal containing the layer's information
+   */
   static getLayerInfo(ser){
     let infoRegex = /^<([A-Za-z]+)><([0-9]+)><([0-9]+)><([0-9]+)>/;
     let info = infoRegex.exec(ser);
@@ -39,6 +68,12 @@ class InLayer{
     };
   }
 
+  /**
+   * Create an instance of InLayer using the information in a serialized string (returned by serialize() function)
+   * 
+   * @param {string} ser String returned by serialize() function
+   * @returns {object} an instance of InLayer
+   */
   static deserialize(ser){
     let layerInfo = InLayer.getLayerInfo(ser);
     let height = layerInfo.height;
@@ -49,6 +84,10 @@ class InLayer{
     return inLayer;
   }
 
+  /**
+   * @param {string} ser String returned by serialize() function
+   * @returns {string} a brief description of the layer
+   */
   static getLayerDescription(ser){
     let layerInfo = InLayer.getLayerInfo(ser);
     let layerType = layerInfo.layerType;
@@ -69,10 +108,23 @@ class InLayer{
     return description;
   }
 
+  /**
+   * Called when creating a neural network instance, in order to establish the sequence of different layers in a model.
+   * 
+   * @param {object} prevLayer The layer to be placed before this layer
+   * @param {object} nextLayer The layer to be placed after this layer
+   */
   link(nextLayer){
     this.nextLayer = nextLayer;
   }
 
+  /**
+   * Performing the forward propagation.
+   * Using the the passed argument as the input.
+   * The output is saved in instance's field (this.O)
+   * 
+   * @param {array} input The input values to the neural network
+   */
   forProp(input){
     let I = input;
     let O;
@@ -96,11 +148,11 @@ class InLayer{
     this.O = O;
   }
 
+  /**
+   * Place holder. InLayer is the first layer in a neural network and does not need to propagate the error further back.
+   */
   backProp() {
-    
   }
 }
 
-if(typeof process === 'object'){
-  module.exports = InLayer;
-}
+module.exports = InLayer;

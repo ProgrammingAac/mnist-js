@@ -1,10 +1,31 @@
-//Written by Aa C. (ProgrammingAac@gmail.com)
+/**
+ * @module CLayer
+ */
+
+const ActivationUtil = require('./ActivationUtil.js');
+const Matrix = require('./Matrix.js');
+
+/**
+ * @author Aa C.
+ * @class The representation of a convolution layer in a convolutional neural network (CNN)
+ */
 class CLayer{
+
+  /**
+   * @constructs
+   * @param {number} kernelSize The length(or width) of the kernel
+   * @param {number} numMaps The number of value maps produced in forward propagation
+   */
   constructor(kernelSize, numMaps){
     this.kernelSize = kernelSize;
     this.numMaps = numMaps;
   }
 
+  /**
+   * Store the layer's information in a formatted string, and return that string
+   * 
+   * @returns {string} String containing the layer's information
+   */
   serialize(){
     let ser = "";
     ser += "<" + this.constructor.name + ">";
@@ -15,6 +36,13 @@ class CLayer{
     return ser;
   }
 
+  /**
+   * Extract information from the serialized string returned by serialize() function 
+   * and return those information as an object literal
+   * 
+   * @param {string} ser String returned by serialize() function
+   * @returns {object} object literal containing the layer's information
+   */
   static getLayerInfo(ser){
     let infoRegex = /^<([A-Za-z]+)><([0-9]+)><([0-9]+)>(.+)/;
     let info = infoRegex.exec(ser);
@@ -36,6 +64,12 @@ class CLayer{
     };
   }
 
+  /**
+   * Create an instance of CLayer using the information in a serialized string (returned by serialize() function)
+   * 
+   * @param {string} ser String returned by serialize() function
+   * @returns {object} an instance of CLayer
+   */
   static deserialize(ser){
     let layerInfo = CLayer.getLayerInfo(ser);
     let kernelSize = layerInfo.kernelSize;
@@ -47,6 +81,10 @@ class CLayer{
     return cLayer;
   }
 
+  /**
+   * @param {string} ser String returned by serialize() function
+   * @returns {string} a brief description of the layer
+   */
   static getLayerDescription(ser){
     let layerInfo = CLayer.getLayerInfo(ser);
     let layerType = layerInfo.layerType;
@@ -61,6 +99,12 @@ class CLayer{
     return description;
   }
 
+  /**
+   * Called when creating a neural network instance, in order to establish the sequence of different layers in a model.
+   * 
+   * @param {object} prevLayer The layer to be placed before this layer
+   * @param {object} nextLayer The layer to be placed after this layer
+   */
   link(prevLayer, nextLayer){
     this.prevLayer = prevLayer;
     this.nextLayer = nextLayer;
@@ -80,6 +124,9 @@ class CLayer{
 
   }
   
+  /**
+   * Initialize the kernel values using the He initialization scheme
+   */
   _heInitialization(){
     let mapInputs = this.prevLayer.numMaps;
     let mapOutputs = this.numMaps;
@@ -93,6 +140,11 @@ class CLayer{
     }
   }
 
+  /**
+   * Perform forward propagation.
+   * Use the previous layer's output as the input.
+   * The output is saved in instance's field (this.O)
+   */
   forProp(){
     let I = this.prevLayer.O;
     this.I = I;
@@ -118,6 +170,10 @@ class CLayer{
     this.O = O;
   }
 
+  /**
+   * Backward propagation.  
+   * Pass the gradient information from next layer to the previous layer
+   */
   backProp(){
     let dEdO = this.nextLayer.dEdI;
 
@@ -152,6 +208,12 @@ class CLayer{
     return dEdK;
   }
 
+  /**
+   * Add the parameter gradient 
+   * to the instance's parameter gradient (this.dP)
+   * 
+   * @param {array} dP 2D-array containing the kernel gradient map Matrices
+   */
   addDP(dP){
     if (!this.dP){
       this.dP = dP;
@@ -165,6 +227,11 @@ class CLayer{
     }
   }
 
+  /**
+   * Update the layer's parameters with the instance's field this.dP
+   * 
+   * @param {number} a Learning rate
+   */
   updateParameters(a){
     if (this.dP){
       for (let i = 0; i < this.dP.col; i++){
@@ -177,7 +244,4 @@ class CLayer{
   }
 }
 
-if(typeof process === 'object'){
-  ActivationUtil = require('./ActivationUtil.js');
-  module.exports = CLayer;
-}
+module.exports = CLayer;

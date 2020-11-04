@@ -1,5 +1,14 @@
-//Written by Aa C. (ProgrammingAac@gmail.com)
+/**
+ * @author Aa C.
+ * @class The representation of a Matrix
+ */
 class Matrix extends Array{
+
+  /**
+   * @constructs
+   * @param {number} col The number of columns in the matrix
+   * @param {number} row The number of rows in the matrix
+   */
   constructor(col, row){
     super(col);
     for (let c = 0; c < col; c++){
@@ -13,6 +22,13 @@ class Matrix extends Array{
     this.row = row;
   }
 
+  /**
+   * Static method to create a Matrix instance from a 1-D array and a specified column number
+   * 
+   * @param {array} arr The 1-D array to be converted into a matrix
+   * @param {number} col The column number of the matrix
+   * @returns {Matrix} The matrix converted from the 1-D array
+   */
   static fromArray(arr, col){
     let row = arr.length / col;
     let result = new Matrix(col, row);
@@ -24,6 +40,12 @@ class Matrix extends Array{
     return result;
   }
 
+  /**
+   * Static method to create a Matrix instance from a 2-D array
+   * 
+   * @param {array} arr The 2-D array to be converted into a matrix
+   * @returns {Matrix} The matrix converted from the 2-D array
+   */
   static from2DArray(arr){
     let col = arr.length;
     let row = arr[0].length;
@@ -37,6 +59,13 @@ class Matrix extends Array{
     return result;
   }
 
+  /**
+   * The dot operation.
+   * The first operand is the Matrix instance itself.
+   * 
+   * @param {Matrix} m The other operand in the dot operation
+   * @returns {Matrix} The result matrix of the dot operation
+   */
   dot(m){
     let result = new Matrix(m.col, this.row);
     for (let cI = 0; cI < result.col; cI++){
@@ -51,6 +80,12 @@ class Matrix extends Array{
     return result;
   }
 
+  /**
+   * Flatten/ vectorize the current matrix into a 1-D matrix (vector).
+   * Then, return that 1-D matrix (vector).
+   * 
+   * @returns The vectorized 1-D matrix from the current matrix
+   */
   vectorize(){
     let result = new Matrix(1, this.col * this.row);
     for (let i = 0; i < this.col*this.row; i++){
@@ -59,6 +94,13 @@ class Matrix extends Array{
     return result;
   }
 
+  /**
+   * concatenate vector v2 after v1 to form a longer 1-D matrix (vector)
+   * 
+   * @param {Matrix} v1 1-D matrix (vector)
+   * @param {Matrix} v2 1-D matrix (vector)
+   * @returns The concatenated 1-D matrix (vector), with v2 after v1
+   */
   static concatVectors(v1, v2) {
     if (v1.col !== 1) throw new Error("v1 is not a vector");
     if (v2.col !== 1) throw new Error("v2 is not a vector");
@@ -75,6 +117,13 @@ class Matrix extends Array{
     return result;
   }
 
+  /**
+   * Slice a portion of a vector.
+   * 
+   * @param {number} pos1 inclusive start position to slice
+   * @param {number} pos2 exclusive end position to slice
+   * @returns {Matrix} The sliced vector
+   */
   sliceVector(pos1, pos2) {
     let arr = this.toArray();
     let result = Matrix.fromArray(arr.slice(pos1,pos2), 1);
@@ -82,6 +131,12 @@ class Matrix extends Array{
     return result;
   }
 
+  /**
+   * Create a matrix from the current matrix and a specified number of vectors
+   * 
+   * @param {number} numOfVectors The number of vectors in the result matrix, i.e., the column number
+   * @returns {Matrix} The result matrix
+   */
   matrixize(numOfVectors){
     let col = numOfVectors;
     let row = this.col * this.row / col;
@@ -94,6 +149,13 @@ class Matrix extends Array{
     return result;
   }
 
+  /**
+   * Hadamard product operation.
+   * The first operand is the Matrix instance itself
+   * 
+   * @param {Matrix} The other operand in the Hadamard product operation
+   * @returns {Matrix} The result of the Hadamard product operation
+   */
   hP(m){
     if (this.col !== m.col) throw new Error("The col length do not match");
     if (this.row !== m.row) throw new Error("The row length do not match");
@@ -109,6 +171,9 @@ class Matrix extends Array{
     return result;
   }
 
+  /**
+   * @returns {Matrix} Matrix transposed from the current Matrix instance
+   */
   transpose(){
     let result = new Matrix(this.row, this.col);
 
@@ -121,6 +186,13 @@ class Matrix extends Array{
     return result;
   }
 
+  /**
+   * Element-wise Matrix addition.
+   * The first operand is the Matrix instance itself.
+   * 
+   * @param {Matrix} m The other operand in the addition operation
+   * @returns {Matrix} The result matrix of the Matrix addition operation
+   */
   add(m){
     if (this.col !== m.col) throw new Error("The col length do not match");
     if (this.row !== m.row) throw new Error("The row length do not match");
@@ -130,9 +202,14 @@ class Matrix extends Array{
         this[c][r] = this[c][r] + m[c][r];
       }
     }
-
   }
 
+  /**
+   * Scalar multiplication on the matrix instance
+   * 
+   * @param {number} a scalar in the operation
+   * @returns {Matrix} The result matrix of the scalar multiplication
+   */
   multiply(a){
     let result = new Matrix(this.col, this.row);
 
@@ -145,6 +222,9 @@ class Matrix extends Array{
     return result;
   }
 
+  /**
+   * @returns {array} Array obtained from converting the matrix instance into a 1-D array
+   */
   toArray(){
     let result = new Array(this.col * this.row);
     
@@ -155,6 +235,12 @@ class Matrix extends Array{
     return result;
   }
 
+  /**
+   * Correlation operation
+   * 
+   * @param {Matrix} k Kernel
+   * @returns {Matrix} The result of the correlation operation
+   */
   correlation(k){
     if (!(k instanceof Matrix)) throw Error("kernel is not an instance of Matrix");
     let downSize = k.col - 1;
@@ -177,6 +263,13 @@ class Matrix extends Array{
     return result;
   }
 
+  /**
+   * Full correlation operation. 
+   * Used in backward propagation of CLayer
+   * 
+   * @param {Matrix} k Kernel
+   * @returns {Matrix} The result of the full correlation operation
+   */
   fullCorrelation(k){
     let pad = k.col - 1;
     let padMCol = this.col + pad*2;
@@ -208,6 +301,11 @@ class Matrix extends Array{
     return padM.correlation(k);
   }
 
+  /**
+   * Rotate the matrix by 180 degress and return the rotated matrix
+   * 
+   * @returns {Matrix} The matrix instance but rotated by 180 degrees
+   */
   rotate180(){
     let result = new Matrix(this.col, this.row);
 
@@ -222,6 +320,11 @@ class Matrix extends Array{
     return result;
   }
 
+  /**
+   * Fill the matrix elements by 
+   * random numbers within the range of
+   * [-0.5, 0.5]
+   */
   rand() {
     for (let c = 0; c < this.col; c++){
       for (let r = 0; r < this.row; r++){
@@ -230,6 +333,13 @@ class Matrix extends Array{
     }
   }
 
+  /**
+   * Fill the matrix elements by the random uniform
+   * distribution scheme
+   * 
+   * @param {number} lowerLimit The lower numerical limit of each value in the matrix
+   * @param {number} upperLimit The upper numerical limit of each value in the matrix
+   */
   randUni(lowerLimit, upperLimit){
     let numInputs = this.col;
     let numOutputs = this.row;
@@ -247,6 +357,12 @@ class Matrix extends Array{
     }
   }
 
+  /**
+   * Pass each element in the matrix through a function and return the result
+   * 
+   * @param {function} func The function to be used
+   * @returns {Matrix} The result matrix
+   */
   applyByElement(func){
     let result = new Matrix(this.col, this.row);
 
@@ -259,6 +375,9 @@ class Matrix extends Array{
     return result;
   }
 
+  /**
+   * @returns {Matrix} A deep copy of the matrix instance
+   */
   copy() {
     let m = new Matrix(this.col, this.row);
     for (let c = 0; c < this.col; c++) {
@@ -271,6 +390,4 @@ class Matrix extends Array{
 
 }
 
-if(typeof process === 'object'){
-  module.exports = Matrix;
-}
+module.exports = Matrix;
